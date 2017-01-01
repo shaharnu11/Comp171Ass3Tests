@@ -282,9 +282,7 @@
    
    '(lambda (a) (lambda () (set! a 3) b)) 
    
-   '(lambda (a) (set! a 3) a)
-   
-   '(lambda () (define (a b . c) 3) x)
+   '(lambda (a) (set! a 3) a)   
    
    '(a (lambda (a) (a (lambda (b) (a b (lambda (a) (a b (lambda (c) (a b c)))))))))	
 
@@ -425,7 +423,9 @@
 	  (lambda ()
 	    (lambda (x)
 	      (list (lambda () (lambda () x)) (lambda (x) (set! x 1))))))
-	         
+
+	;;test44
+	'(lambda () (define (a b . c) 3) x)
 
 ))        
 
