@@ -84,7 +84,7 @@
 
     '(lambda (x) (define y (lambda () (define a 5) 4)) 1)
       
-    ;'(lambda (x) (define a 5) (lambda (y) (define x 10) (a 5)))
+    '(lambda (x) (define a 5) (lambda (y) (define x 10) (a 5)))
     ;'(lambda (x) (define a 5) (define a 123) (lambda (y) (define x 10) (a 5)) 2)
      
       '(lambda (z) (define a 5) (define b 123) (lambda (y) (define x 10) 
@@ -266,7 +266,7 @@
       
    '(((lambda () f)) ((lambda () g)) ((lambda () h)) (z (m c (d ((lambda () ((lambda () ((lambda () ((lambda () ((lambda () ((lambda () ((lambda () (+)))))))))))))))))))
    
-   ;'(lambda(x) (lambda (y) (set! x 1) (lambda () x)))
+   '(lambda(x) (lambda (y) (set! x 1) (lambda () x)))
    
    '(or 3 4 (lambda (x) (define x 3) 5))
    
@@ -437,6 +437,22 @@
 	(set! x 1)
 	(lambda (x) (lambda () x (set! x 1))))
 
+	;;test46
+	'(lambda (x)
+	  (lambda ()
+	    (set! x (lambda (z) (lambda () z (set! z 1))))
+	    x))
+	    
+	;;test47
+	'(lambda (x)
+	  (lambda ()
+	    y
+	    (set! x (+ 1 x (lambda (z) (lambda () z (set! z 1)))))))
+	    
+	;;test48
+	'(lambda() (if (lambda a (define x (lambda () x)) 8 ) (+ (- 9)) (lambda(x) (lambda () 
+	  (set! x (+ 1 x (lambda (x) (lambda () x (set! x 1)))))))))
+    
 ))        
 
 (display (format "\033[1mComp171 - Ass3 Tests\033[0m\n================================\n"))
