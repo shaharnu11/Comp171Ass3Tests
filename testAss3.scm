@@ -279,6 +279,10 @@
    '(lambda (x . y) (lambda () (set! x 1)))
    
    '(or 1 (lambda (x) (x x)) (lambda (y) (y y)))
+   
+   '(lambda (a) (lambda () (set! a 3) b)) 
+   
+   '(lambda (a) (set! a 3) a)
 
    
 ))  
@@ -412,6 +416,12 @@
         
         ;;test42
         '(lambda a (lambda b (define x 2) 2) #f)
+        
+        ;;test43
+        '(lambda ()
+	  (lambda ()
+	    (lambda (x)
+	      (list (lambda () (lambda () x)) (lambda (x) (set! x 1))))))
        
 
 ))        
