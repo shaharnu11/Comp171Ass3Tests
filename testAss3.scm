@@ -284,7 +284,11 @@
    
    '(lambda (a) (set! a 3) a)   
    
-   '(a (lambda (a) (a (lambda (b) (a b (lambda (a) (a b (lambda (c) (a b c)))))))))	
+   '(a (lambda (a) (a (lambda (b) (a b (lambda (a) (a b (lambda (c) (a b c)))))))))
+   
+   '(define x (+ 1 (* 3 4) (- 5 6)))
+   
+   '(* (* 1 2) 3 (+ 4 5) ((lambda () (/ 7 8))) ((lambda () (define nine 9) (- nine 10))))
 
 ))  
 
