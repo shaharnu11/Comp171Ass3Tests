@@ -430,6 +430,12 @@
 
 	;;test44
 	'(lambda () (define (a b . c) 3) x)
+	
+	;;test45
+	'(lambda (x)
+	x
+	(set! x 1)
+	(lambda (x) (lambda () x (set! x 1))))
 
 ))        
 
