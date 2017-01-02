@@ -85,7 +85,8 @@
     '(lambda (x) (define y (lambda () (define a 5) 4)) 1)
       
     '(lambda (x) (define a 5) (lambda (y) (define x 10) (a 5)))
-    ;'(lambda (x) (define a 5) (define a 123) (lambda (y) (define x 10) (a 5)) 2)
+    '(lambda (x) (define a 5) (define a1 123) (lambda (y) (define x 10) (a 5)) 2)
+    '(lambda (x) (define a 5) (lambda () (define a 123) (a #t)) (lambda (y) (define x 10) (a 5)) 2)
      
       '(lambda (z) (define a 5) (define b 123) (lambda (y) (define x 10) 
 	(define x1 (lambda (abc) (define a 56) (define x1 10) (+ 1 2))) (f 32 45 'a)) (a 5))
@@ -146,6 +147,28 @@
 
        
     '(lambda (a . b) (begin (lambda () a) (set! a 5)))
+    
+    '1
+    
+    '(define mileage
+      (lambda (thunk)
+	(let ((loop ((eng (make-engine thunk)) (total-ticks 0))))
+	  (eng 50
+	    (lambda (ticks value)
+	      (+ total-ticks (- 50 ticks)))
+	    (lambda (new-eng)
+	      (loop new-eng (+ total-ticks 50))))))) 
+	      
+    '(define round-robin
+      (lambda (engs)
+	(if (null? engs)
+	    '()
+	    ((car engs) 1
+	      (lambda (ticks value)
+		(cons value (round-robin (cdr engs))))
+	      (lambda (eng)
+		(round-robin
+		  (append (cdr engs) (list eng))))))))			
 
 		
     '(let ((a 0) (c 1))
@@ -289,6 +312,16 @@
    '(define x (+ 1 (* 3 4) (- 5 6)))
    
    '(* (* 1 2) 3 (+ 4 5) ((lambda () (/ 7 8))) ((lambda () (define nine 9) (- nine 10))))
+   
+   '(apply f (1 2 3))
+   
+   '(let () (define x 5) (a (let ((a 1)) (set! a 2) (- 3 a))) (- b a) (c))
+   
+   '(let () (let () (let () (f ((lambda () (let () ((lambda x (f (lambda (g h . k) x)))) 1)))))))
+   
+   '((lambda (a) (lambda x (lambda (g . h) (let ((h 15)) h)))) a x g)
+   
+   '(begin (begin 5) (begin (display "abcde") (+ 6 7)) #t #f (display "Lorem Ipsum"))
 
 ))  
 
