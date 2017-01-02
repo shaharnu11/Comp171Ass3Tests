@@ -325,6 +325,11 @@
    
    '(lambda (a b c d e f g h i j k lmnop q r stuv w . xyz) 
       xyz (lambda (k j) ((lambda () j) k)) (i h) g f free-var1 (e d c b ((((a))))))
+      
+   '(cond ((a 1) b)
+	  ((= ((lambda a 2) (list 2)) 3) (caddr a))
+	  (else (car x)))
+	
 
 ))  
 
