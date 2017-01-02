@@ -322,6 +322,9 @@
    '((lambda (a) (lambda x (lambda (g . h) (let ((h 15)) h)))) a x g)
    
    '(begin (begin 5) (begin (display "abcde") (+ 6 7)) #t #f (display "Lorem Ipsum"))
+   
+   '(lambda (a b c d e f g h i j k lmnop q r stuv w . xyz) 
+      xyz (lambda (k j) ((lambda () j) k)) (i h) g f free-var1 (e d c b ((((a))))))
 
 ))  
 
