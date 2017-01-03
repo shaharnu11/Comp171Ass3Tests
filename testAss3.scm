@@ -329,9 +329,869 @@
    '(cond ((a 1) b)
 	  ((= ((lambda a 2) (list 2)) 3) (caddr a))
 	  (else (car x)))
+	  
+   '(lambda (a b c)
+      (begin
+      (begin
+      (define foo (lambda (x) x ))
+      (define goo (lambda (y) y )))
+      (begin
+      (define moo (lambda (x) x ))
+      (define poo (lambda (y) y ))))
+      (* (foo (poo (moo a)))
+      (goo (* b c))))
 	
+  '(lambda (x) (set! x 3) (+ x 4))
+  
+  '(lambda (a b . x) 1)
 
 ))  
+
+(define Comp161Ass3Tests
+  (list
+    '(lambda (a) (a 2))
+    
+    '(lambda (a b)
+      (a (b 2)))
+  
+    '(lambda (a b)
+      (a (a b)))
+      
+    '(lambda (a)
+	(if (b? a)
+	    (- a 1)
+	    (b a)))
+  
+    '(lambda (a)
+      (begin
+	(define b (lambda (x)
+		    (+ x a)))
+	(define c (lambda (x)
+		    (x a)))
+	(c (b a))))
+	
+    '(x (lambda (y)
+      (begin
+	(define a (lambda (b)
+		    (y b)))
+	(define t (lambda(x)
+		    (begin
+		      (define h (lambda (j)
+				  (x j y)))
+		      h)))
+	(t a))))
+	
+    '(lambda ( x y z zx xx)   
+      (begin
+      (define t1 
+	(lambda (g t) 
+		  (if (zero? y) zx (g t z))))
+	(define y (lambda (y x)
+		    (+ y x)))
+	(define g (lambda (y f)
+		    (y f))))
+	(t1 (y z g) g))
+
+    '(lambda (x)  
+      (begin
+	(define a
+	  (lambda (x y z)
+	    (begin 
+	    (set! z z)
+	    (set! z x))
+	    (x y z)))
+	(define b b)
+	(define c (lambda (y)
+		    (lambda(z)
+		      (z x y))))
+      (b y))
+    (x b y a))
+    
+    '(lambda (a b c)
+      (begin
+	(begin
+	  (define ff (lambda (g)
+		      (begin
+			(define t (+ 6 g))
+			(define u (lambda (c) (* c (t c)))))
+		      (- t g)))
+	  5)
+	
+	(* a (ff b) (b a))))
+	
+    '(lambda (a b c d e)
+      (a (b c) (c b d) (a (b (c (d e))))))
+      
+    '(lambda (a) 
+      (set! min4 (lambda (a) 
+		    (set! min3 (lambda (a) 
+				    (set! min2 (lambda (a) 
+						  (- a 2))) 
+				    (- (min2 a) 1))) 
+		  (- (min3 a) 1))) 
+      (+ (min4 a) a))
+	
+    '(lambda (c)
+      (define f2 (lambda (x)
+		      (+ x x (c x))))
+      (if (not (eq? c 0))
+	  (try that)        
+	  (f2 (f2 c))))
+
+    '(define fibonacci
+      (memoize
+	(lambda (n)
+	  (if (< n 2)
+	      1
+	      (+ (fibonacci (- n 1)) (fibonacci (- n 2)))))))
+	      
+    '((lambda (c)
+      (+ c 5)) 7)
+      
+    '(let ([fact (lambda (n)
+		  (if (= n 0)
+		    1
+		    (* n (fact (- n 1)))))])
+      (fact 5))
+      
+    '(letrec 
+      ((first 1) 
+      (second 2) 
+      (third 3) 
+      (fourth (lambda (x) 
+		(if (> x 0) 
+		    (begin 
+		      (+ 1 first) 
+		      (+ 1 second)                    
+		      (newline)
+		      (fourth (- x 1)))
+				      1))))
+      (fourth (fourth 2)))
+      
+    '(define factorial 
+      (lambda(n)
+	(if (= n 0)
+	  1
+	  (* n (factorial (- n 1))))))
+	  
+    '(lambda (a b c)
+      (begin
+	(begin
+	  (begin 
+	    (define foo (lambda (x) (+ x x)))
+	    (define goo (lambda (y) 
+			  (define foo (* a b)) (* foo b)))))
+	(define j 34)
+	(begin 
+	    (define moo (lambda (x)
+			  (begin 
+			    (define x 10)
+			    (define y (lambda (x)(not x)))
+			    (set! a (* a b c))))))
+	(* (foo (goo (moo x)))
+	(goo (* b c j)))))
+    
+    '(a b)
+    
+    '(lambda (x)(list (lambda (y) (set! x 1)) x))
+    
+    '(lambda (x y z)
+      (lambda (y)
+	((set! x 5)) (+ x y))
+	(+ x y z))
+	
+    '(lambda (x y z)
+      (lambda (y)
+	((set! x 5) (set! y 6) (+ x y))
+	(+ x y z)))
+	
+    '(x (lambda (y)
+      (begin
+	(set! a (lambda (b)
+		    (y b)))
+	(set! t (lambda(x)
+		    (begin
+		      (set! y (lambda (j)
+				  (x j x)))
+		      h)))
+	(y a))))
+	
+    '(lambda (x)
+      (x (lambda (y)
+	    (x (lambda (y)
+		(x (lambda (y) (set! x y))))))))
+		
+    '(lambda ( x y z zx xx)   
+      (begin
+      (define t1 
+	(lambda (g t) 
+		  (if (zero? y) zx (g t z))))
+	(define y (lambda (y x)
+		    (+ y x)))
+	(define g (lambda (y f)
+		    (y f))))
+	(set! y x) (t1 (y z g) g))
+	
+    '(lambda (x)
+      (set! x 6)
+      (lambda (y) x))
+      
+    '(lambda (x)
+      (set! x 6)
+      (set! x 6)
+      (set! x 6)
+      (set! x 6)
+      (lambda (y) x))
+      
+    '(lambda (x z)  
+      (begin
+	(define a
+	  (lambda (g y)
+	    (begin 
+	    (set! z z)
+	    (set! x z))
+	    (x y z)))
+	(define b b)
+	(define c (lambda (f)
+		    (lambda(g)
+		      (z x y))))
+      (b y))
+    (x b y a))
+    
+    '(lambda (x)  
+      (lambda (z)
+	(set! x x)))
+	
+    '(lambda (x y)  
+      (lambda (z)
+	(set! x x)
+	(set! y 2)))
+	
+    '(lambda (x y)
+      (+ y 2)
+      (set! y 2)
+      (lambda (z)
+	  (set! x x)))
+	  
+    '(define foo
+      (lambda (x)    
+	(begin
+	  (define (poo x y) (goo (boo x y)))
+	  (define (moo x) (* x x x))
+	  (set! x (goo x))
+	  (set! x (boo x))
+	  (poo x (moo x)))))
+	  
+    '(lambda (x)
+      (begin
+	(define y 10)
+	(set! x (* x x))    
+	(if (even? x) y (- y x))))
+	
+    '(lambda (a) 
+      (begin 
+	(define a 4) 
+	(define id1 
+	  (lambda  (c b) a))) 
+      (* a a))
+      
+    '(lambda (a b) 
+      (begin 
+	(define iszero (lambda (a b) 
+			(or (zero? a) (zero? b))))
+	(define min1 (lambda (a) (- a 1))) 
+	(define min2 (lambda (b) (- (min1 b) 2)))) 
+      (if (iszero a b) (min1 a) (min2 b)))
+      
+    '(lambda (t i)    
+	(begin                            
+	  (begin                           
+	    (define l (lambda (x) (+ x x)))
+	    (define o (lambda (y) (* i t))))
+	  (begin                         
+	    (define i (lambda (x) (+ x x)))
+	    (define e (lambda (y) (- y)))))
+	(* i t))
+	
+      '(lambda (a b c)
+        (begin
+  	(begin
+  	  (begin 
+  	    (define foo (lambda (x) (set! foo 4)(+ x x)))
+  	    (define goo (lambda (y) 
+  			  (define foo (* a b)) (* foo b)))))
+  	(define t5 (lambda (x) (begin
+  				(define x 6)
+  							    (set! goo 5)
+  							    (set! f 50)
+  				(* a x))))
+  	(begin 
+  	  (define f (lambda (d)
+  		      (* d d d )))
+  	  (begin
+  	    (define h (lambda (f g)
+  			(if (or (even? g) (even? g) (even (+ f g))) 
+  			    f g)))))
+  	)    
+  	(* (foo (goo (* a x)))
+  	(f (* b c))))
+
+      
+    '(x (lambda (y)
+	(begin
+	  (define a (lambda (b)
+		      (define a (lambda (b) b))
+				      (set! a (lambda (b) b))
+				      (set! t (lambda (b) b))
+				      (set! h (lambda (b) b))
+		      (y b)))
+	  (define t (lambda(t)
+		      (begin
+			(define h (lambda (j)
+				    (define y 7)
+				    (t j y)))
+			h)))
+	  (t (a h)))))
+	  
+     '(lambda (a b c d e)
+       (define f (lambda (x)
+ 		  (a (b c) (c b d) (a (b (c (d e)))))))
+       (set! a 3)
+       (set! b 5)
+       (set! c a) #f)
+		  
+    '(define cse
+      (lambda (exp)
+	(let* ((res_aux (aux exp '()))
+	      (res_let (make_let (car res_aux) (cadr res_aux) '() 1)))
+	  (if (null? (cadr res_let))
+	      exp
+	      (let ((let_ribs (filter 
+				(lambda (x) x)
+				(map 
+				  (lambda (rib)
+				    (find (car rib) (cadr res_let)))
+				  (cadr res_aux)))))
+		(list 'let* let_ribs (car res_let)))))))
+		
+    '(set! are-parentheses-balanced-list?
+      (lambda (are-parentheses-balanced-list?)
+	      (lambda (exp num)
+		    (set! are-parentheses-balanced-list? are-parentheses-balanced-list?)	  
+		    (if (and (= num 0) (null? exp)) #t
+			    (if (or (< num 0) (null? exp)) #f
+				    (if (char=? (car exp) #\()
+					    (are-parentheses-balanced-list? (cdr exp) (+ num 1))
+					    (if (char=? (car exp) #\))
+						    (are-parentheses-balanced-list? (cdr exp) (- num 1))
+						    (are-parentheses-balanced-list? (cdr exp) num))))))))
+						    
+    '(define make-monitored (lambda(proc) 
+                         (letrec
+                               ((counter 0)
+                                  (how-many-calls (lambda ( ) counter))
+                                  (reset-count (lambda( ) (set! counter 0)))
+                                  (compute (lambda (arg) 
+                                             ( begin 
+                                               (set! counter (+ counter 1)) (proc arg) )))
+                                  (dispatch (lambda (op arg)
+                                              (cond ((eq? op 'how-many-calls?) (how-many-calls))
+                                                    ((eq? op 'reset-count) (reset-count))
+                                                    ((eq? op 'compute) (compute arg))
+                                                    (else 0)))))
+                               dispatch)))
+                               
+    '(define make-sq-jump (lambda (lst)
+                      (letrec ((main-func (lambda (make-sq-jump res-lst) 
+											(lambda (a) 
+											 (set! make-sq-jump make-sq-jump)
+											 (set! res-lst res-lst)
+											 (if (null? (cdr (memq a lst)))
+                                             (list lst)											 
+                                             (let ((res-lst (make-sq-jump (cdr (memq a lst)))))
+                                               (append (list (append (list a )
+                                                                       (filter (lambda (res-lst-element)
+                                                                                 ( > (car res-lst-element) (* a a)))
+                                                                               res-lst ))) 
+                                                       res-lst )))))))
+                             (main-func  (car lst)))))
+                             
+    '(define primitive-application? (lambda (primitive-application?)
+								((lambda (app)
+                                 (primitive-application? (car app))
+								 (set! primitive-application? primitive-application?)))))
+    
+    '(define list-of-values
+      (lambda (list-of-values)
+	(lambda (exps env)
+	  (if (no-operands? exps)
+	      '()
+	      (cons (env-eval (first-operand exps) env)
+		    (list-of-values (rest-operands exps) env)))
+	      (set! list-of-values (cdr list-of-values)))))
+	      
+    '(define (add-binding! binding)
+      (add-binding-to-frame! binding (first-frame the-global-environment)))
+      
+    '(define x (lambda (x) (lambda () (set! x 5) x)))
+    
+    '(let ((counter 0)) 
+      (set! inc-counter-by (lambda (n) (set! counter (+ counter n)))) 
+      (set! inc-counter (lambda () (inc-counter-by 1))) 
+      (set! counter-value (lambda () counter)))
+      
+    '(lambda (x) x)
+    
+    '(lambda (x) x x x)
+    
+    '(lambda (x y) (+ x y))
+    
+    '(lambda (y) (x y))
+    
+    '(lambda (x y z)
+	(define x 5)
+	(+ x y z))
+	
+    '(x (lambda (y)
+	(begin
+	  (define a (lambda (b)
+		      (y b)))
+	  (define t (lambda(x)
+		      (begin
+			(define h (lambda (j)
+				    (x j y)))
+			h)))
+	  (t a))))
+	  
+    '((lambda (x)
+	(x (lambda (y)
+	      (x (lambda (y)
+		  (x (lambda (y) y))))))))
+		  
+    '(lambda (x y)
+      (x (y 6)))
+      
+    '(lambda (we)
+      (if (are? all)
+	  (free vars)))
+	  
+    '(lambda (x xx)
+      (set! x xx)
+      (- xxx x))
+      
+    '(lambda (x y z zx xx)
+      (begin
+	(define y (+ x 5))
+	(set! y 8)
+	xx)
+      (if (zero? y) zx))
+      
+    '(lambda (x y z zx xx)   
+      (begin
+      (define t1 
+	(lambda (g t) 
+		  (if (zero? y) zx (g t z)))))
+	t1)
+	
+    '(lambda ( x y z zx xx)   
+      (begin
+      (define t1 
+	(lambda (g t) 
+		  (if (zero? y) zx (g t z))))
+	(define y (lambda (y x)
+		    (+ y x)))
+	(define g (lambda (y f)
+		    (y f))))
+	(t1 (y z g) g))
+	
+    '(lambda (x)  
+	(begin
+	  (define a
+	    (lambda (x y z)
+	      (begin 
+	      (set! z z)
+	      (set! z x))
+	      (x y z)))
+	  (define b b)
+	  (define c (lambda (y)
+		      (lambda(z)
+			(z x y))))
+	(b y))
+      (x b y a))
+      
+    '(lambda (a b c)
+      (begin
+	(begin
+	  (begin 
+	    (define foo (lambda (x) (+ x x)))
+	    (define goo (lambda (y) 
+			  (define foo (* a b)) (* foo b)))))
+	(define t5 (lambda (x) (begin
+				(define x 6)
+				(* a x))))
+	(begin 
+	  (define f (lambda (d)
+		      (* d d (t5 d) )))
+	  (begin
+	    (define h (lambda (f g)
+			(define or_p 
+			  (lambda (x y) (or (even? x) (even? y) (even (+ x y)))))
+			(define t6 (lambda (x) (begin
+						(define a1 1)
+						(define a2 2)
+						(* 2 (+ a1 a2)))))
+			(if (or_p f g) 
+			    f (t6 g))))))
+	)(+ (t5 6) (t6 7) (f 6)))
+	
+    '(lambda (x)
+      (lambda (y)
+	(lambda (x)
+	  ((lambda (z)
+	    (x y y)) x)
+	  )))
+	  
+    '(lambda (a b c)
+      (begin
+	(begin
+	  (define ff (lambda (g)
+		      (begin
+			(define t (+ 6 g))
+			(define u (lambda (c) (* c (t c)))))
+		      (- t g)))
+	  5)
+	
+	(* a (ff b) b a)))
+	
+    '(lambda (x y)
+      (list (lambda () x)
+	    (lambda (z) (set! y z))
+	    (lambda (z) (set! x z))))
+	    
+    '(lambda (a) 
+      (set! min4 (lambda (a) 
+		    (set! min3 (lambda (a) 
+				    (set! min2 (lambda (a) 
+						  (- a 2))) 
+				    (- (min2 a) 1))) 
+		  (- (min3 a) 1))) 
+      (+ (min4 a) a))
+      
+    '(test (lambda (x)
+	(x (lambda (y x)
+	      (x (lambda (y)
+		  (x (lambda (y) y) test)))))) zero?)
+		  
+    '(lambda (a) (define a 5) a)
+    
+    '(lambda (a) (define add5 (lambda (b) (+ b 5))) (add5 a))
+    
+    '(lambda (a) (define id (lambda (b) b)) (define min1 (lambda (b) (- b 1))) (min1 (id a)))
+    
+    '(lambda (a b c) (define plus (lambda (a b) (+ a b))) (define minus (lambda (a b) (- a b))) (minus (plus a b) c))
+
+    '(lambda (x)
+      (begin
+	(define y 10)
+	(if (even? x) y (- y x))))
+	
+    '(lambda (x)
+      (begin
+	(define y 10)
+	(set! x (* x x))    
+	(if (even? x) y (- y x))))
+	
+    '(lambda (a) (begin (define a 4) (define id1 (lambda  (a b) a))) (* a a))
+    
+    '(lambda (a) (begin (define a 4) (define id1 (lambda  (a b) a))) (* (id1 a a) a))
+    
+    '(lambda (a b) (begin (define iszero (or (zero? a) (zero? b))) (define id1 (lambda (a b) a))) (if iszero 3 5))
+    
+    '(lambda (a b) (begin (define iszero (lambda (a b) (or (zero? a) (zero? b)))) (define min1 (lambda (a) (- a 1))) (define min2 (lambda (b) (- b 2)))) (if (iszero a b) (min1 a) (min2 b)))
+    
+    '(lambda (a) (define min4 (lambda (a) (define min3 (lambda (a) (define min2 (lambda (a) (- a 2))) (-(min2 a) 1))) (- (min3 a) 1))) (+ (min4 a) a))
+    
+    '(lambda (t i)    
+      (begin                            
+        (begin                           
+          (define l (lambda (x) (+ x x)))
+          (define o (lambda (y) (* y y))))
+        (begin                         
+          (define v (lambda (x) (+ x x)))
+          (define e (lambda (y) (- y)))))
+      (* i t))
+      
+    '(lambda (a)                                 
+	  (begin                               
+		(begin                            
+		  (define force (lambda (x) (+ x x)))
+		  (define the  (lambda (y) (* y y)))
+		  (define with (lambda (x) (- x 4))))             
+		(begin                             
+		  (define may (lambda (x) (+ x x)))
+		  (define be (lambda (y) (* 5 y))))
+		(define you a))                         
+	  (may (the (force (be (with you))))))
+	  
+    '(lambda (a b c)
+	(begin
+	  (begin
+	    (begin 
+	      (define foo (lambda (x) (+ x x)))
+	      (define goo (lambda (y) 
+			    (define foo (* a b)) (* foo b)))))
+	  (begin 
+	      (define moo (lambda (x)
+			    (begin 
+			      (define x 10)
+			      (define y (lambda (x)(not x)))
+			      (set! a (* a b c))))))
+	  (* (foo (goo (moo x)))
+	  (goo (* b c)))))
+	  
+    '(lambda (a b c)
+      (begin
+	(begin
+	  (begin 
+	    (define foo (lambda (x) (+ x x)))
+	    (define goo (lambda (y) 
+			  (define foo (* a b)) (* foo b)))))
+	(define j 34)
+	(begin 
+	    (define moo (lambda (x)
+			  (begin 
+			    (define x 10)
+			    (define y (lambda (x)(not x)))
+			    (set! a (* a b c))))))
+	(* (foo (goo (moo x)))
+	(goo (* b c j)))))
+	
+    '(lambda (a b c)
+      (begin
+	(begin
+	  (begin 
+	    (define foo (lambda (x) (+ x x)))
+	    (define goo (lambda (y) 
+			  (define foo (* a b)) (* foo b))))))    
+	(* (foo (goo (* a x)))
+	(goo (* b c))))
+	
+    '(lambda (a b c)
+      (begin
+	(begin
+	  (begin 
+	    (define foo (lambda (x) (+ x x)))
+	    (define goo (lambda (y) 
+			  (define foo (* a b)) (* foo b)))))
+	(define t5 (lambda (x) (begin
+				(define x 6)
+				(* a x))))
+	(begin 
+	  (define f (lambda (d)
+		      (* d d d )))
+	  (begin
+	    (define h (lambda (f g)
+			(if (or (even? g) (even? g) (even (+ f g))) 
+			    f g)))))
+	)    
+	(* (foo (goo (* a x)))
+	(f (* b c))))
+	
+    '(lambda (a b c)
+      (begin
+	(begin
+	  (begin 
+	    (define foo (lambda (x) (+ x x)))
+	    (define goo (lambda (y) 
+			  (define foo (* a b)) (* foo b)))))
+	(define t5 (lambda (x) (begin
+				(define x 6)
+				(* a x))))
+	(begin 
+	  (define f (lambda (d)
+		      (* d d (t5 d) )))
+	  (begin
+	    (define h (lambda (f g)
+			(define or_p 
+			  (lambda (x y) (or (even? x) (even? y) (even (+ x y)))))
+			(define t6 (lambda (x) (begin
+						(define a1 1)
+						(define a2 2)
+						(* 2 (+ a1 a2)))))
+			(if (or_p f g) 
+			    f (t6 g))))))
+	)    
+	(* (foo (goo (h a x)))
+	(f (* b (t5 c)))))
+	
+    '(lambda (a b c)
+      (begin
+	(begin
+	  (begin 
+	    (define foo (lambda (x) (+ x x)))
+	    (define goo (lambda (y) 
+			  (define foo (* a b)) (* foo b)))))
+	(begin 
+	  (define f (lambda (d)
+		      (* d d (foo d) )))
+	  (begin
+	    (define h (lambda (f g)
+			(define or_p 
+			  (lambda (x y) (or (even? x) (even? y) (even (+ x y)))))
+			(define t6 (lambda (x) (begin
+						(define a1 1)
+						(define a2 2)
+						(* 2 (+ a1 a2)))))
+			(if (or_p f g) 
+			    f (t6 g))))))
+	)    
+	(* (foo (goo (h a x)))
+	(f (* b (f c)))))
+	
+    '(lambda (a b c)
+      (begin
+	(begin
+	  (begin 
+	    (begin
+	      (begin
+		(define x a))
+	      (define xx b)
+	      (define xxx (* b b))
+	    )))
+	(* x xx xxx b a)))
+	
+    '(lambda (a b c)
+      (begin
+	(begin
+	  (begin 
+	    (begin
+	      (begin
+		(define x a))
+	      (define xx b)
+	      (define xxx (* b b))
+	    )))
+	(begin 
+	  (define xxxx c)
+	(* x xx xxx xxxx b a))))
+	
+    '(lambda (a b c)
+      (begin
+	(begin
+	  (begin 
+	    (begin
+	      (begin
+		(define x a))
+	      (define xx b)
+	      (define xxx (* b b))
+	    )))
+	(begin 
+	  (define xxxx c)
+	  (define tt (lambda (d) (begin
+				(define t 8) (* t 7))))                           
+	(* x xx xxx (tt xxxx) b a))))
+	
+    '(lambda (a b c)
+      (begin
+	(begin
+	  (define ff (lambda (g)
+		      (begin
+			(define t (+ 6 g))
+			(define u (lambda (c) (* c (t c)))))
+		      (- t g)))
+	  (begin 
+	    (begin
+	      (begin
+		(define x a))
+	      (define xx b)
+	      (define xxx (* b b))
+	    )))
+	(begin 
+	  (define xxxx c)
+	  (define tt (lambda (d) (begin
+				(define t 8) (* t 7))))
+			      
+	(* x xx (ff c) (tt xxxx) b a))))
+	
+    '(lambda (a b c)
+      (begin
+	(begin
+	  (define ff (lambda (g)
+		      (begin
+			(define t (+ 6 g))
+			(define u (lambda (c) (* c (t c)))))
+		      (- t g)))
+	  (begin 
+	    (begin
+	      (begin
+		(define x a))
+	      (define xx b)
+	      (define xxx (* b b))
+	      (define t1 (lambda (x)
+			  (define t2 (lambda(x)
+					(define t3 (lambda (x)
+						    (define t4 (lambda (x)x))
+						    (- 5 (t4 x))))
+					(+ x (t3 7))))
+			  (- (t2 a) a)))
+	      
+	    )))
+	(begin 
+	  (define xxxx c)
+	  (define tt (lambda (d) (begin
+				(define t 8) (* t 7))))
+			      
+	(* x (t1 xx) (ff c) (tt xxxx) b a))))
+	
+    '(lambda (a b c)
+      (begin
+	(begin
+	  (define ff (lambda (g)
+		      (begin
+			(define t (+ 6 g))
+			(define u (lambda (c) (* c (t c)))))
+		      (- t g)))
+	  5)
+	
+	(* a (ff b) b a)))
+	
+    '(lambda (a b c)
+      (begin
+	(begin
+	  (define ff (lambda (g)
+		      (begin
+			(define t (+ 6 g))
+			(define u (lambda (c) (* c (t c)))))
+		      (- t g)))
+	  (ff 5)))
+	(ff b))
+	
+    '(lambda (a b c)
+      (begin
+	(begin
+	  (define ff (lambda (g)
+		      (begin
+			(define t (+ 6 g))
+			(define u (lambda (c) (* c (t c)))))
+		      4))
+	  (ff 5)))
+	(ff b))
+
+    '(lambda (a b c)
+      (begin
+	(begin
+	  (define ff (lambda (g)
+		      (begin
+			(define t (+ 6 g))
+			(define u (lambda (c) (* c t ))))
+		      (u t)))
+	  (ff 5))
+	(ff b)))
+	
+    '(lambda (a) (begin (define b (+ 87 a))) b)
+    
+    '(lambda (a)(define b 6) b)
+	
+))
 
 (define GiladWinterfeldTests
   (list
@@ -501,5 +1361,6 @@
 (runAllTests
   (list
       (cons "Gilad Winterfeld Tests" GiladWinterfeldTests) 
+      (cons "Comp161 Ass3 Tests" Comp161Ass3Tests)
       (cons "Complex Tests" Tests)           
 ))
