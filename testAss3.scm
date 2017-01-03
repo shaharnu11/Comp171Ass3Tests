@@ -14,7 +14,8 @@
 			    
 (load "Tests/hw3.so")			    
 
-(define tests-counter 1)
+(define tests-counter 0)
+(define failed-tests-counter 0)
 
 (define show-difference
   (lambda (actual expected)
@@ -28,13 +29,14 @@
 			    
 (define assert
 	(lambda (input)
-		(display (format "~s) ~s\n" tests-counter input))
 		(set! tests-counter (+ 1 tests-counter))
+		(display (format "~s) ~s\n" tests-counter input))
 		(let ((actual-output (test-func input))
 		      (expected-output (full-cycle input)))
 			(cond ((equal? actual-output expected-output)
 				(display (format "\033[1;32m Success! ☺ \033[0m \n\n")) #t)
-				(else 
+				(else
+				(set! failed-tests-counter (+ 1 failed-tests-counter))
 				(display (format "\033[1;31mFailed! ☹\033[0m\n\n\033[1;34mExpected:\n ~s\033[0m\n\n\033[1;29mActual:\n ~s\033[0m\n\n" expected-output actual-output))
 				#f))
 			)))
@@ -1364,3 +1366,7 @@
       (cons "Comp161 Ass3 Tests" Comp161Ass3Tests)
       (cons "Complex Tests" Tests)           
 ))
+
+(display (format "\033[1;32mPassed: ~s of ~s tests ☺\033[0m\n" (- tests-counter failed-tests-counter) tests-counter))
+(if (> failed-tests-counter 0)
+  (display (format "\033[1;31mFailed: ~s of ~s tests ☹\033[0m\n" failed-tests-counter tests-counter)))
