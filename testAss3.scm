@@ -17,6 +17,10 @@
 (define tests-counter 0)
 (define failed-tests-counter 0)
 
+;;;; Configuration
+(define show-passed-tests #t)
+(define show-summary #t)
+
 (define show-difference
   (lambda (actual expected)
     (if (or (null? actual) (null? expected)) ""
@@ -30,14 +34,17 @@
 (define assert
 	(lambda (input)
 		(set! tests-counter (+ 1 tests-counter))
-		(display (format "~s) ~s\n" tests-counter input))
 		(let ((actual-output (test-func input))
 		      (expected-output (full-cycle input)))
 			(cond ((equal? actual-output expected-output)
-				(display (format "\033[1;32m Success! ☺ \033[0m \n\n")) #t)
+				(if show-passed-tests
+				  (begin (display (format "~s) ~s\n" tests-counter input))
+				  (display (format "\033[1;32m Success! ☺ \033[0m \n\n")))) 
+				  #t)
 				(else
-				(set! failed-tests-counter (+ 1 failed-tests-counter))
-				(display (format "\033[1;31mFailed! ☹\033[0m\n\n\033[1;34mExpected:\n ~s\033[0m\n\n\033[1;29mActual:\n ~s\033[0m\n\n" expected-output actual-output))
+				  (set! failed-tests-counter (+ 1 failed-tests-counter))
+				  (display (format "~s) ~s\n" tests-counter input))
+				  (display (format "\033[1;31mFailed! ☹\033[0m\n\n\033[1;34mExpected:\n ~s\033[0m\n\n\033[1;29mActual:\n ~s\033[0m\n\n" expected-output actual-output))
 				#f))
 			)))
 			
@@ -60,9 +67,14 @@
 (define runAllTests
   (lambda (lst)
     (let ((results (map (lambda (test) (runTests (car test) (cdr test))) lst)))
+	(if show-summary
+	  (begin
+	    (display (format "Summary\n=============================\n\033[1;32mPassed: ~s of ~s tests ☺\033[0m\n" (- tests-counter failed-tests-counter) tests-counter))
+	    (if (> failed-tests-counter 0)
+	      (display (format "\033[1;31mFailed: ~s of ~s tests ☹\033[0m\n\n" failed-tests-counter tests-counter)))))
       	(cond ((andmap (lambda (exp) (equal? exp #t)) results)		
-		(display "\033[1;32m !!!!!  ☺  ALL TESTS SUCCEEDED  ☺  !!!!\033[0m\n") #t)
-		(else (display "\033[1;31m #####  ☹  SOME TESTS FAILED  ☹  #####\033[0m\n") #f))
+		(display "\033[1;32m!!!!!  ☺  ALL TESTS SUCCEEDED  ☺  !!!!\033[0m\n") #t)
+		(else (display "\033[1;31m#####  ☹  SOME TESTS FAILED  ☹  #####\033[0m\n") #f))
 		(newline))
 ))
 
@@ -1356,17 +1368,609 @@
 	'(lambda() (if (lambda a (define x (lambda () x)) 8 ) (+ (- 9)) (lambda(x) (lambda () 
 	  (set! x (+ 1 x (lambda (x) (lambda () x (set! x 1)))))))))
     
-))        
+))    
+
+
+(define EladZoharTests
+  (list
+'(define ^quote?
+  (lambda (tag)
+    (lambda (e)
+      (and (pair? e)
+	   (eq? (car e) tag)
+	   (pair? (cdr e))
+	   (null? (cddr e))))))
+	   
+'(define const?
+  (let ((simple-sexprs-predicates
+	 (list boolean? char? number? string?)))
+    (lambda (e)
+      (or (ormap (lambda (p?) (p? e))
+		 simple-sexprs-predicates)
+	  (quote? e)))))	   
+
+'(define quotify
+  (lambda (e)
+    (if (or (null? e)
+	    (pair? e)
+	    (symbol? e)
+	    (vector? e))
+	`',e
+	e)))
+
+'(define unquotify
+  (lambda (e)
+    (if (quote? e)
+	(cadr e)
+	e)))
+
+'(define const-pair?
+  (lambda (e)
+    (and (quote? e)
+	 (pair? (cadr e)))))
+
+'(define expand-qq
+  (letrec ((expand-qq
+	    (lambda (e)
+	      (cond ((unquote? e) (cadr e))
+		    ((unquote-splicing? e)
+		     (error 'expand-qq
+		       "unquote-splicing here makes no sense!"))
+		    ((pair? e)
+		     (let ((a (car e))
+			   (b (cdr e)))
+		       (cond ((unquote-splicing? a)
+			      `(append ,(cadr a) ,(expand-qq b)))
+			     ((unquote-splicing? b)
+			      `(cons ,(expand-qq a) ,(cadr b)))
+			     (else `(cons ,(expand-qq a) ,(expand-qq b))))))
+		    ((vector? e) `(list->vector ,(expand-qq (vector->list e))))
+		    ((or (null? e) (symbol? e)) `',e)
+		    (else e))))
+	   (optimize-qq-expansion (lambda (e) (optimizer e (lambda () e))))
+	   (optimizer
+	    (compose-patterns
+	     (pattern-rule
+	      `(append ,(? 'e) '())
+	      (lambda (e) (optimize-qq-expansion e)))
+	     (pattern-rule
+	      `(append ,(? 'c1 const-pair?) (cons ,(? 'c2 const?) ,(? 'e)))
+	      (lambda (c1 c2 e)
+		(let ((c (quotify `(,@(unquotify c1) ,(unquotify c2))))
+		      (e (optimize-qq-expansion e)))
+		  (optimize-qq-expansion `(append ,c ,e)))))
+	     (pattern-rule
+	      `(append ,(? 'c1 const-pair?) ,(? 'c2 const-pair?))
+	      (lambda (c1 c2)
+		(let ((c (quotify (append (unquotify c1) (unquotify c2)))))
+		  c)))
+	     (pattern-rule
+	      `(append ,(? 'e1) ,(? 'e2))
+	      (lambda (e1 e2)
+		(let ((e1 (optimize-qq-expansion e1))
+		      (e2 (optimize-qq-expansion e2)))
+		  `(append ,e1 ,e2))))
+	     (pattern-rule
+	      `(cons ,(? 'c1 const?) (cons ,(? 'c2 const?) ,(? 'e)))
+	      (lambda (c1 c2 e)
+		(let ((c (quotify (list (unquotify c1) (unquotify c2))))
+		      (e (optimize-qq-expansion e)))
+		  (optimize-qq-expansion `(append ,c ,e)))))
+	     (pattern-rule
+	      `(cons ,(? 'e1) ,(? 'e2))
+	      (lambda (e1 e2)
+		(let ((e1 (optimize-qq-expansion e1))
+		      (e2 (optimize-qq-expansion e2)))
+		  (if (and (const? e1) (const? e2))
+		      (quotify (cons (unquotify e1) (unquotify e2)))
+		      `(cons ,e1 ,e2))))))))
+    (lambda (e)
+      (optimize-qq-expansion
+       (expand-qq e)))))
+
+'(define list-head
+  (lambda (s n)
+    (cond ((null? s) '())
+	  ((zero? n) '(#\space #\e #\t #\c))
+	  (else (cons (car s)
+		  (list-head (cdr s) (- n 1)))))))
+
+'(define <end-of-input>
+  (lambda (s ret-match ret-none)
+    (if (null? s)
+	(ret-match #t '())
+	(ret-none '()))))
+
+'(define const
+  (lambda (pred?)
+    (lambda (s ret-match ret-none)
+      (cond ((null? s) (ret-none '()))
+	    ((pred? (car s)) (ret-match (car s) (cdr s)))
+	    (else (ret-none '()))))))
+
+'(define <epsilon>
+  (lambda (s ret-match ret-none)
+    (ret-match '() s)))
+
+'(define caten
+  (letrec ((binary-caten
+	    (lambda (p1 p2)
+	      (lambda (s ret-match ret-none)
+		(p1 s
+		    (lambda (e1 s)
+		      (p2 s
+			  (lambda (e2 s)
+			    (ret-match (cons e1 e2) s))
+			  ret-none))
+		    ret-none))))
+	   (loop
+	    (lambda (ps)
+	      (if (null? ps)
+		  <epsilon>
+		  (binary-caten (car ps)
+				(loop (cdr ps)))))))
+    (lambda ps
+      (loop ps))))
+
+'(define <fail>
+  (lambda (s ret-match ret-none)
+    (ret-none '())))
+
+'(define disj
+  (letrec ((binary-disj
+	    (lambda (p1 p2)
+	      (lambda (s ret-match ret-none)
+		(p1 s ret-match
+		    (lambda (w1)
+		      (p2 s ret-match
+			  (lambda (w2)
+			    (ret-none `(,@w1 ,@w2)))))))))
+	   (loop
+	    (lambda (ps)
+	      (if (null? ps)
+		  <fail>
+		  (binary-disj (car ps)
+			       (loop (cdr ps)))))))
+    (lambda ps
+      (loop ps))))
+
+'(define delay
+  (lambda (thunk)
+    (lambda (s ret-match ret-none)
+      ((thunk) s ret-match ret-none))))
+
+'(define star
+  (lambda (p)
+    (disj (pack-with (caten p (delay (lambda () (star p))))
+		     cons)
+	  <epsilon>)))
+
+'(define plus
+  (lambda (p)
+    (pack-with (caten p (star p))
+	       cons)))
+
+'(define times
+  (lambda (<p> n)
+    (if (zero? n)
+	<epsilon>
+	(pack-with
+	 (caten <p> (times <p> (- n 1)))
+	 cons))))
+
+'(define pack
+  (lambda (p f)
+    (lambda (s ret-match ret-none)
+      (p s (lambda (e s) (ret-match (f e) s)) ret-none))))
+
+'(define pack-with
+  (lambda (p f)
+    (lambda (s ret-match ret-none)
+      (p s (lambda (e s) (ret-match (apply f e) s)) ret-none))))
+
+'(define diff
+  (lambda (p1 p2)
+    (lambda (s ret-match ret-none)
+      (p1 s
+	  (lambda (e w)
+	    (p2 s (lambda _ (ret-none '()))
+		(lambda (w1) (ret-match e w))))
+	  ret-none))))
+
+'(define maybe
+  (lambda (p)
+    (lambda (s ret-match ret-none)
+      (p s
+	 (lambda (e s) (ret-match `(#t ,e) s))
+	 (lambda (w) (ret-match `(#f #f) s))))))
+
+'(define maybe?
+  (lambda (?result)
+    (car ?result)))
+
+'(define maybe->value
+  (lambda (?result)
+    (cadr ?result)))
+
+'(define fence
+  (lambda (p pred?)
+    (lambda (s ret-match ret-none)
+      (p s
+	 (lambda (e s)
+	   (if (pred? e)
+	       (ret-match e s)
+	       (ret-none '())))
+	 ret-none))))
+
+'(define otherwise
+  (lambda (p message)
+    (lambda (s ret-match ret-none)
+      (p s
+	 ret-match
+	 (let ((marker
+		(format "-->[~a]"
+		  (list->string
+		   (list-head s *marker-length*)))))
+	   (lambda (w) (ret-none `(,@w ,message ,marker))))))))
+
+'(define ^char
+  (lambda (char=?)
+    (lambda (character)
+      (const
+       (lambda (ch)
+	 (char=? ch character))))))
+
+'(define char (^char char=?))
+
+'(define char-ci (^char char-ci=?))
+
+'(define ^word
+  (lambda (char)
+    (lambda (word)
+      (apply caten (map char (string->list word))))))
+
+'(define word (^word char))
+
+'(define word-ci (^word char-ci))
+
+'(define ^word-suffixes
+  (lambda (char)
+    (letrec ((loop
+	      (lambda (s)
+		(if (null? s)
+		    <epsilon>
+		    (maybe
+		     (caten (char (car s))
+			    (loop (cdr s))))))))
+      (lambda (suffix)
+	(loop (string->list suffix))))))
+
+'(define word-suffixes (^word-suffixes char))
+
+'(define word-suffixes-ci (^word-suffixes char-ci))
+
+'(define ^word+suffixes
+  (lambda (word-suffixes)
+    (lambda (prefix suffix)
+      (caten (word prefix)
+	     (word-suffixes suffix)))))
+
+'(define word+suffixes (^word+suffixes word-suffixes))
+
+'(define word+suffixes-ci (^word+suffixes word-suffixes-ci))
+
+'(define ^one-of
+  (lambda (char)
+    (lambda (word)
+      (apply disj (map char (string->list word))))))
+
+'(define one-of (^one-of char))
+
+'(define one-of-ci (^one-of char-ci))
+
+'(define ^range
+  (lambda (char<=?)
+    (lambda (char-from char-to)
+      (const
+       (lambda (ch)
+	 (and (char<=? char-from ch)
+	      (char<=? ch char-to)))))))
+
+'(define range (^range char<=?))
+
+'(define range-ci (^range char-ci<=?))
+
+'(define <any-char> (const (lambda (ch) #t)))
+
+'(define <any> <any-char>)
+
+'(define ^<separated-exprs>
+  (lambda (<expr> <sep>)
+    (new (*parser <expr>)
+	 
+	 (*parser <sep>)
+	 (*parser <expr>)
+	 (*caten 2)
+	 (*pack-with (lambda (_sep expr) expr))
+	 *star
+	 
+	 (*caten 2)
+	 (*pack-with cons)
+	 done)))
+
+'(define continue
+  (lambda (ds cs)
+    (with cs
+      (lambda (c . cs)
+	(c ds cs)))))
+
+'(define new
+  (lambda cs
+    (continue '() cs)))
+
+'(define done
+  (lambda (ds cs)
+    (with ds
+      (lambda (parser . ds)
+	(if (null? ds)
+	    parser
+	    (error 'done
+		   (format "The parser stack still contains ~a parsers!"
+		     (length ds))))))))
+
+'(define *parser
+  (lambda (p)
+    (lambda (ds cs)
+      (continue `(,p . ,ds) cs))))
+
+'(define unary
+  (lambda (f-unary)
+    (lambda (ds cs)
+      (with ds
+	(lambda (d . ds)
+	  (continue `(,(f-unary d) . ,ds) cs))))))
+
+'(define *delayed
+  (lambda (thunk)
+    (lambda (ds cs)
+      (continue `(,(delay thunk) . ,ds) cs))))
+
+'(define binary
+  (lambda (f-binary)
+    (lambda (ds cs)
+      (with ds
+	(lambda (d2 d1 . ds)
+	  (continue `(,(f-binary d1 d2) . ,ds) cs))))))
+
+'(define *dup
+  (lambda (ds cs)
+    (with ds
+      (lambda (d1 . ds)
+	(continue `(,d1 ,d1 . ,ds) cs)))))
+
+'(define *swap
+  (lambda (ds cs)
+    (with ds
+      (lambda (d1 d2 . ds)
+	(continue `(,d2 ,d1 . ,ds) cs)))))
+
+'(define *star (unary star))
+
+'(define *plus (unary plus))
+
+'(define *diff (binary diff))
+
+'(define *pack (lambda (f) (unary (lambda (p) (pack p f)))))
+
+'(define *pack-with (lambda (f) (unary (lambda (p) (pack-with p f)))))
+
+'(define *fence (lambda (pred?) (unary (lambda (p) (fence p pred?)))))
+
+'(define *guard (lambda (pred?) (unary (lambda (p) (fence p pred?)))))
+
+'(define split-list
+  (lambda (s n ret-s1+s2)
+    (if (zero? n)
+	(ret-s1+s2 '() s)
+	(split-list (cdr s) (- n 1)
+		    (lambda (s1 s2)
+		      (ret-s1+s2 (cons (car s) s1) s2))))))
+
+'(define nary
+  (lambda (f-n-ary n)
+    (lambda (ds cs)
+      (split-list ds n
+       (lambda (sgra ds)
+	 (continue
+	  `(,(apply f-n-ary (reverse sgra)) . ,ds) cs))))))
+
+'(define *caten (lambda (n) (nary caten n)))
+
+'(define *disj (lambda (n) (nary disj n)))
+
+'(define *maybe (unary maybe))
+
+'(define *otherwise
+  (lambda (string)
+    (unary
+     (lambda (p)
+       (otherwise p string)))))
+
+'(define *times
+  (lambda (n)
+    (unary
+     (lambda (<p>)
+       (times <p> n)))))
+
+'(define not-followed-by
+  (lambda (<p1> <p2>)
+    (new (*parser <p1>)
+	 (*parser <p2>) *maybe
+	 (*caten 2)
+	 (*pack-with
+	  (lambda (e1 ?e2)
+	    (with ?e2
+	      (lambda (found-e2? _)
+		`(,e1 ,found-e2?)))))
+	 (*guard
+	  (lambda (e1+found-e2?)
+	    (with e1+found-e2?
+	      (lambda (_ found-e2?)
+		(not found-e2?)))))
+	 (*pack-with
+	  (lambda (e1 _) e1))
+	 done)))
+
+'(define *transformer
+  (lambda (^<p>)
+    (unary (lambda (<p>) (^<p> <p>)))))
+
+'(define test-string
+  (lambda (parser string)
+    (parser (string->list string)
+	    (lambda (e s)
+	      `((match ,e)
+		(remaining ,(list->string s))))
+	    (lambda (w) `(failed with report: ,@w)))))
+
+'(define test
+  (lambda (parser s)
+    (parser s
+	    (lambda (e s)
+	      `((match ,e)
+		(remaining ,s)))
+	    (lambda (w) `(failed with report: ,@w)))))
+
+'(define file->string
+  (lambda (filename)
+    (let ((input (open-input-file filename)))
+      (letrec ((run
+		(lambda ()
+		  (let ((e (read-char input)))
+		    (if (eof-object? e)
+			(begin
+			  (close-input-port input)
+			  '())
+			(cons e (run)))))))
+	(list->string (run))))))
+
+'(define read-stdin-to
+  (lambda (end-of-input)
+    (let ((end-of-input-list (string->list end-of-input)))
+      (letrec ((state-init
+		(lambda (seen)
+		  (let ((ch (read-char)))
+		    (cond ((eof-object? ch)
+			   (error 'read-stdin-to
+			     (format "Marker ~a not reached"
+			       end-of-input)))
+			  ((char=? ch (car end-of-input-list))
+			   (state-seen seen `(,ch) (cdr end-of-input-list)))
+			  (else (state-init `(,ch ,@seen)))))))
+	       (state-seen
+		(lambda (seen-before seen-now end-of-input-list-rest)
+		  (if (null? end-of-input-list-rest)
+		      (list->string
+		       (reverse seen-before))
+		      (let ((ch (read-char)))
+			(cond ((eof-object? ch)
+			       (format "Marker ~a not reached"
+				 end-of-input))
+			      ((char=? ch (car end-of-input-list-rest))
+			       (state-seen seen-before
+					   `(,ch ,@seen-now)
+					   (cdr end-of-input-list-rest)))
+			      (else (state-init
+				     `(,ch ,@seen-now ,@seen-before)))))))))
+	(state-init '())))))
+
+'(define ?
+  (lambda (name . guards)
+    (let ((guard?
+	   (lambda (e)
+	     (andmap 
+	      (lambda (g?) (g? e))
+	      guards))))
+      (lambda (value)
+	(if (guard? value)
+	    (list value)
+	    #f)))))
+
+'(define pattern-rule
+  (lambda (pat handler)
+    (lambda (e failure)
+      (match pat e handler failure))))
+
+'(define compose-patterns
+  (letrec ((match-nothing
+	    (lambda (e failure)
+	      (failure)))
+	   (loop
+	    (lambda (s)
+	      (if (null? s)
+		  match-nothing
+		  (let ((match-rest
+			 (loop (cdr s)))
+			(match-first (car s)))
+		    (lambda (e failure)
+		      (match-first e
+		       (lambda ()
+			 (match-rest e failure)))))))))
+    (lambda patterns
+      (loop patterns))))
+
+'(define-syntax (test stx)
+  (define context (syntax-local-context))
+  (define loc (list (eq? 'top-level context)
+                    (syntax-source stx) (syntax-line stx) (syntax-column stx)
+                    (syntax-position stx) (syntax-span stx)))
+  (test-gen stx loc))
+
+'(define (test-error loc fmt . args)
+  (let ([s (tests-state)]
+        [msg (parameterize ([current-inspector (test-inspector)]
+                            [print-struct #t])
+               (apply format fmt args))]
+        [top? (car loc)]
+        [loc (apply make-srcloc (cdr loc))])
+    (if (and (not top?) (mpair? s))
+      (begin (set-mcdr! s (cons (cons msg loc) (mcdr s)))
+             (set-mcar! s (add1 (mcar s))))
+      (raise (make-exn:test (string-append "Test failure: " msg)
+                            (current-continuation-marks)
+                            (list loc))))))
+'(define (test-ok loc expr)
+  (let ([s (tests-state)])
+    (if (and (not (car loc)) (mpair? s))
+      (set-mcar! s (add1 (mcar s)))
+      (printf "Test passed\n"))))
+
+'(define (in-test-context! loc)
+  (unless (or (car loc) (tests-state))
+    (error 'test "invalid use (not in `run-tests' or in the REPL)")))
+
+'(define (test-1 val expr loc)
+  (in-test-context! loc)
+  (if ((test-postprocess) val)
+    (test-ok loc expr)
+    (test-error loc "~.s is false" expr)))
+'(define (test-2 val1 expr1 val2 expr2 loc)
+  (in-test-context! loc)
+  (parameterize ([current-inspector (test-inspector)])
+    (let ([val1 ((test-postprocess) val1)]
+          [val2 ((test-postprocess) val2)])
+      (if (equal? val1 val2)
+        (test-ok loc expr1)
+        (test-error loc "~.s: expected ~e, got ~e" expr1 val2 val1)))))
+
+))
 
 (display (format "\033[1mComp171 - Ass3 Tests\033[0m\n================================\n"))
 
 (runAllTests
-  (list
-      (cons "Gilad Winterfeld Tests" GiladWinterfeldTests) 
+  (list      
       (cons "Comp161 Ass3 Tests" Comp161Ass3Tests)
-      (cons "Complex Tests" Tests)           
+      (cons "Complex Tests" Tests)  
+      (cons "Gilad Winterfeld Tests" GiladWinterfeldTests) 
+      (cons "Elad Zohar Tests" EladZoharTests) 
 ))
-
-(display (format "\033[1;32mPassed: ~s of ~s tests ☺\033[0m\n" (- tests-counter failed-tests-counter) tests-counter))
-(if (> failed-tests-counter 0)
-  (display (format "\033[1;31mFailed: ~s of ~s tests ☹\033[0m\n" failed-tests-counter tests-counter)))
