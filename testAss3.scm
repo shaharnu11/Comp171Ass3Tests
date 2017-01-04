@@ -1204,6 +1204,15 @@
     '(lambda (a) (begin (define b (+ 87 a))) b)
     
     '(lambda (a)(define b 6) b)
+    
+    '(lambda (a) (set b 2) 5)
+    
+    '(lambda (a) (begin 5 (set b 2) #t))
+    
+    '(lambda (a) (box-set b 2) 5)
+    '(lambda (a) (box-get b 2) 5)
+    
+    '(lambda (a) (begin 5 (box-set b 2) (box-get a) #t))    
 	
 ))
 
@@ -1302,7 +1311,7 @@
         '(lambda () (define (a x) x) b)
         
         ;;test31
-        '(lambda () (define x 1) (define (x) 2) 'body)
+        '(lambda () (define x 1) (define (y) 2) 'body)
 
         ;;test32
         '((lambda a a))
@@ -1918,13 +1927,6 @@
 			 (match-rest e failure)))))))))
     (lambda patterns
       (loop patterns))))
-
-'(define-syntax (test stx)
-  (define context (syntax-local-context))
-  (define loc (list (eq? 'top-level context)
-                    (syntax-source stx) (syntax-line stx) (syntax-column stx)
-                    (syntax-position stx) (syntax-span stx)))
-  (test-gen stx loc))
 
 '(define (test-error loc fmt . args)
   (let ([s (tests-state)]
