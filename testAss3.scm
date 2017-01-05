@@ -1376,6 +1376,18 @@
 	;;test48
 	'(lambda() (if (lambda a (define x (lambda () x)) 8 ) (+ (- 9)) (lambda(x) (lambda () 
 	  (set! x (+ 1 x (lambda (x) (lambda () x (set! x 1)))))))))
+	  
+	;;test49  
+	'(lambda ()
+	  (define c
+	      (lambda ()
+		  (define c (lambda ()
+			      c))
+		  1))
+	      2)
+	      
+	;;test50
+	'(lambda (x . a) (lambda () (set! x x)))
     
 ))    
 
