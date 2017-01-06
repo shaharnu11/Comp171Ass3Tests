@@ -29,13 +29,19 @@
 			(show-difference (cdr actual) (cdr expected)))
 	  (begin (display (format "\033[1;31m~s\033[0m" (car actual)))
 			(show-difference (cdr actual) (cdr expected)))))
-))	
+))
+
+(define try-catch
+  (lambda (try-thunk catch-thunk)
+    (guard (c (else (catch-thunk)))
+     (try-thunk))))
 			    
 (define assert
 	(lambda (input)
 		(set! tests-counter (+ 1 tests-counter))
+		(try-catch (lambda ()
 		(let ((actual-output (test-func input))
-		      (expected-output (full-cycle input)))
+		      (expected-output (full-cycle input)))			
 			(cond ((equal? actual-output expected-output)
 				(if show-passed-tests
 				  (begin (display (format "~s) ~s\n" tests-counter input))
@@ -45,8 +51,12 @@
 				  (set! failed-tests-counter (+ 1 failed-tests-counter))
 				  (display (format "~s) ~s\n" tests-counter input))
 				  (display (format "\033[1;31mFailed! ☹\033[0m\n\n\033[1;34mExpected:\n ~s\033[0m\n\n\033[1;29mActual:\n ~s\033[0m\n\n" expected-output actual-output))
-				#f))
-			)))
+				#f))))
+			(lambda () (set! failed-tests-counter (+ 1 failed-tests-counter))
+				(display (format "~s) ~s\n" tests-counter input))
+				(display 
+				    (format "\n\033[1;31mEXCEPTION OCCURED. PLEASE CHECK MANUALLY THE INPUT:\n ~s\033[0m\n\n" input)) #f))
+			))
 			
 (define runTests
   (lambda (tests-name lst)
