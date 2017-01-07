@@ -364,6 +364,17 @@
       (define poo (lambda (y) y ))))
       (* (foo (poo (moo a)))
       (goo (* b c))))
+      
+   '(lambda (a b c)
+      (begin
+      (begin
+      (define foo (lambda (x) x ))
+      (define goo (lambda (y) y )))
+      (begin
+      (define moo (lambda (x) x ))
+      (define poo (lambda (y) y ))))
+      (* (foo (poo (moo a)))
+      (goo (* b c))) 1 2 (+ 3 5) 78)      
 	
   '(lambda (x) (set! x 3) (+ x 4))
   
